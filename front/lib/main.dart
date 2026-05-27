@@ -1,121 +1,155 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'screens/login_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 발급받은 네이티브 앱 키로 교체하세요
+  KakaoSdk.init(nativeAppKey: 'YOUR_KAKAO_NATIVE_APP_KEY');
+
+  runApp(const JeonshijangApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class JeonshijangApp extends StatelessWidget {
+  const JeonshijangApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: '나만의 전시장',
+      theme: ThemeData.dark(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const MainShowcaseScreen(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class MainShowcaseScreen extends StatelessWidget {
+  const MainShowcaseScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text(' 나의 가상 장식장'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_album),
+            onPressed: () {
+              print('굿즈 추가 버튼 클릭됨!');
+            },
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber, width: 2),
+                image: const DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=650'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: 20,
+                    left: 50,
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1608889174637-3c44f6326f1a?q=80&w=150',
+                      width: 120,
+                      height: 120,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image, size: 50, color: Colors.red);
+                      },
+                    ),
+                  ),
+                  const Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Card(
+                      color: Colors.black54,
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('현재 테마: 사이버펑크 룸 (예시)'),
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '내가 보유한 굿즈 목록',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildGoodsRealCard('고양이 피규어', 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=100'),
+                        _buildGoodsRealCard('귀여운 키링', 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=100'),
+                        _buildGoodsRealCard('건담 로봇', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=100'),
+                        _buildGoodsRealCard('포토 카드', 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=100'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildGoodsRealCard(String goodsName, String imageUrl) {
+    return Container(
+      width: 90,
+      margin: const EdgeInsets.only(right: 12, bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.network(
+              imageUrl,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            goodsName,
+            style: const TextStyle(fontSize: 10, color: Colors.white70),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

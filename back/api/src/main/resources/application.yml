@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: jeonshijang-api
+
+  datasource:
+    url: jdbc:h2:mem:jeonshijangdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+    open-in-view: false
+
+  # OAuth2 클라이언트 자동설정 비활성화 — FE가 Kakao SDK로 토큰을 발급해 전달하므로
+  # Spring의 redirect 기반 OAuth2 로그인 플로우는 사용하지 않는다.
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
+  access-token-expiry-ms: 1800000     # 30분
+  refresh-token-expiry-ms: 1209600000 # 14일
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET:local-bucket}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+    region:
+      static: ap-northeast-2
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.jeonshijang: DEBUG
+    org.hibernate.SQL: DEBUG

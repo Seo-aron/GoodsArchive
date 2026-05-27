@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p front)",
+      "Bash(git mv *)",
+      "PowerShell(Move-Item \"c:\\\\jeonshijang_app\\\\build\" \"c:\\\\jeonshijang_app\\\\front\\\\build\")",
+      "Bash(git add *)"
+    ]
+  }
+}
