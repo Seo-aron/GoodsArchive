@@ -1,0 +1,68 @@
+# =======================================================================
+# Flutter / Dart / Pub Dependencies
+# =======================================================================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# Flutter Artifacts & Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Android Studio / Build Artifacts
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# =======================================================================
+# Operating System (OS) / Miscellaneous
+# =======================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+*.log
+*.swp
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# =======================================================================
+# IDEs (IntelliJ, VS Code)
+# =======================================================================
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+# (팀원들과 디버깅/실행 설정을 공유하려면 주석을 해제하지 마세요)
+#.vscode/
+
+# =======================================================================
+# Backend (Spring Boot / Java / Maven) - Anticipated
+# =======================================================================
+*.class
+*.pyc
+target/
+bin/
+!.mvn/wrapper/maven-wrapper.jar
+
+### Eclipse / STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
