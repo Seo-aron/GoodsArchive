@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await AuthService.loginWithKakao(token.accessToken);
 
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
     } on KakaoAuthException catch (e) {
       if (mounted) {

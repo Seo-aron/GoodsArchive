@@ -4,7 +4,12 @@
       "Bash(mkdir -p front)",
       "Bash(git mv *)",
       "PowerShell(Move-Item \"c:\\\\jeonshijang_app\\\\build\" \"c:\\\\jeonshijang_app\\\\front\\\\build\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "PowerShell(Get-ChildItem -Path \"$env:USERPROFILE\" -Filter \"debug.keystore\" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName)",
+      "Read(//c//**)",
+      "PowerShell(Test-Path \"$env:USERPROFILE\\\\.android\"; ls \"$env:USERPROFILE\\\\.android\" -ErrorAction SilentlyContinue)",
+      "PowerShell(cd \"c:\\\\jeonshijang_app\\\\front\\\\android\"; $env:JAVA_HOME=\"C:\\\\Program Files\\\\Java\\\\jdk-17\"; .\\\\gradlew signingReport 2>&1 | Select-String -Pattern \"SHA1|Alias|Store|keystore\" | Select-Object -First 20)",
+      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\kakao_flutter_sdk_common-1.10.0\" -Recurse -Name | Select-Object -First 30)"
     ]
   }
 }

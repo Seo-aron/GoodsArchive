@@ -4,7 +4,8 @@
     <application
         android:label="jeonshijang_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,20 +31,20 @@
         <!-- 카카오 네이티브 앱 키: 발급받은 키로 교체하세요 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="YOUR_KAKAO_NATIVE_APP_KEY" />
+            android:value="15ee0f3418efcadef9e9c5ab3676c584" />
 
-        <!-- 카카오 OAuth 리다이렉트 처리 (카카오앱 미설치 시 웹 로그인) -->
+        <!-- 카카오 OAuth 딥링크 복귀 처리 (kakao_flutter_sdk_common 1.10.0+) -->
         <activity
-            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
-            android:exported="true">
+            android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- scheme: kakao + 네이티브앱키 (예: kakao1234567890abcdef) -->
                 <data
                     android:host="oauth"
-                    android:scheme="kakaoYOUR_KAKAO_NATIVE_APP_KEY" />
+                    android:scheme="kakao15ee0f3418efcadef9e9c5ab3676c584" />
             </intent-filter>
         </activity>
 

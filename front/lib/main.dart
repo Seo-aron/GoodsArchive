@@ -1,156 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'screens/login_screen.dart';
+import 'screens/collection_screen.dart';
+import 'screens/showcase_screen.dart';
+import 'screens/record_screen.dart';
+import 'screens/my_info_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 발급받은 네이티브 앱 키로 교체하세요
-  KakaoSdk.init(nativeAppKey: 'YOUR_KAKAO_NATIVE_APP_KEY');
-
-  runApp(const JeonshijangApp());
+  KakaoSdk.init(nativeAppKey: '15ee0f3418efcadef9e9c5ab3676c584');
+  runApp(const ShowcaseApp());
 }
 
-class JeonshijangApp extends StatelessWidget {
-  const JeonshijangApp({super.key});
+// 1. 앱의 진짜 진입점 (테마 및 기본 설정)
+class ShowcaseApp extends StatelessWidget {
+  const ShowcaseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '나만의 전시장',
-      theme: ThemeData.dark(),
+      title: '피규어 쇼케이스',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.grey.shade50,
+      ),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/home': (context) => const MainShowcaseScreen(),
+        '/login': (_) => const LoginScreen(),
+        '/home': (_) => const MainTabController(),
       },
     );
   }
 }
 
-class MainShowcaseScreen extends StatelessWidget {
-  const MainShowcaseScreen({super.key});
+// 2. 화면 하단 탭바를 관리하는 컨트롤러 화면
+class MainTabController extends StatefulWidget {
+  const MainTabController({super.key});
+
+  @override
+  State<MainTabController> createState() => _MainTabControllerState();
+}
+
+class _MainTabControllerState extends State<MainTabController> {
+  int _currentIndex = 0; // 현재 선택된 탭 인덱스
+
+  // 이동할 4개의 화면 리스트 (나중에는 각각 다른 파일로 분리합니다)
+  final List<Widget> _screens = [
+    const CollectionScreen(),
+    const ShowcaseScreen(),
+    const RecordScreen(),
+    const MyInfoScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(' 나의 가상 장식장'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.photo_album),
-            onPressed: () {
-              print('굿즈 추가 버튼 클릭됨!');
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amber, width: 2),
-                image: const DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=650'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    bottom: 20,
-                    left: 50,
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1608889174637-3c44f6326f1a?q=80&w=150',
-                      width: 120,
-                      height: 120,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.broken_image, size: 50, color: Colors.red);
-                      },
-                    ),
-                  ),
-                  const Positioned(
-                    top: 16,
-                    left: 16,
-                    child: Card(
-                      color: Colors.black54,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('현재 테마: 사이버펑크 룸 (예시)'),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '내가 보유한 굿즈 목록',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildGoodsRealCard('고양이 피규어', 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=100'),
-                        _buildGoodsRealCard('귀여운 키링', 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=100'),
-                        _buildGoodsRealCard('건담 로봇', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=100'),
-                        _buildGoodsRealCard('포토 카드', 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=100'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGoodsRealCard(String goodsName, String imageUrl) {
-    return Container(
-      width: 90,
-      margin: const EdgeInsets.only(right: 12, bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey[850],
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.network(
-              imageUrl,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            goodsName,
-            style: const TextStyle(fontSize: 10, color: Colors.white70),
-            overflow: TextOverflow.ellipsis,
-          ),
+      body: _screens[_currentIndex], // 현재 인덱스에 맞는 화면을 바디에 뿌려줌
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index; // 탭을 누르면 화면 전환
+          });
+        },
+        type: BottomNavigationBarType.fixed, // 탭이 4개 이상일 때 고정
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: '컬렉션'),
+          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), label: '전시장'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: '기록'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '내정보'),
         ],
       ),
     );
   }
 }
+
