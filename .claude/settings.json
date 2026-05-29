@@ -9,7 +9,10 @@
       "Read(//c//**)",
       "PowerShell(Test-Path \"$env:USERPROFILE\\\\.android\"; ls \"$env:USERPROFILE\\\\.android\" -ErrorAction SilentlyContinue)",
       "PowerShell(cd \"c:\\\\jeonshijang_app\\\\front\\\\android\"; $env:JAVA_HOME=\"C:\\\\Program Files\\\\Java\\\\jdk-17\"; .\\\\gradlew signingReport 2>&1 | Select-String -Pattern \"SHA1|Alias|Store|keystore\" | Select-Object -First 20)",
-      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\kakao_flutter_sdk_common-1.10.0\" -Recurse -Name | Select-Object -First 30)"
+      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\kakao_flutter_sdk_common-1.10.0\" -Recurse -Name | Select-Object -First 30)",
+      "Bash(Get-ChildItem -Path \"c:\\\\jeonshijang_app\" -Recurse -Filter \"Goods.java\")",
+      "Bash(Select-Object -First 5)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\jeonshijang_app\\\\back\\\\api\\\\src\\\\main\\\\java\\\\com\\\\jeonshijang\\\\api\\\\domain\" -Directory | ForEach-Object { Write-Output \"=== $\\($_.Name\\) ===\"; Get-ChildItem -Path $_.FullName -Recurse | Where-Object {$_.Extension -eq \".java\"} | Select-Object Name })"
     ]
   }
 }

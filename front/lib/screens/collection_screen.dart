@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
-
-// 더미 데이터 모델 — Step 4 백엔드 연동 시 API 응답으로 교체 예정
-class _GoodsItem {
-  final String name;
-  final int price;
-  final String imageUrl;
-  const _GoodsItem({required this.name, required this.price, required this.imageUrl});
-}
-
-final _dummyGoods = [
-  _GoodsItem(name: '건담 RX-78', price: 45000, imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=200'),
-  _GoodsItem(name: '포켓몬 피규어', price: 28000, imageUrl: 'https://images.unsplash.com/photo-1608889174637-3c44f6326f1a?w=200'),
-  _GoodsItem(name: '고양이 키링', price: 12000, imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200'),
-  _GoodsItem(name: '포토카드 세트', price: 8000, imageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200'),
-];
+import '../models/goods_item.dart';
+import '../services/goods_service.dart';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -23,13 +10,27 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
+  late Future<List<GoodsItem>> _goodsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _goodsFuture = GoodsService.getGoods();
+  }
+
+  void _refresh() {
+    setState(() {
+      _goodsFuture = GoodsService.getGoods();
+    });
+  }
+
   void _showAddGoodsSheet() {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // 키보드가 올라와도 시트가 밀려 올라감
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -50,10 +51,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-
-              // 이미지 선택 영역 — Step 4 연동 시 ImagePicker로 교체
               GestureDetector(
-                onTap: () {}, // TODO: 카메라/갤러리 선택
+                onTap: () {}, // TODO: Step 4 — 카메라/갤러리 연동
                 child: Container(
                   height: 140,
                   decoration: BoxDecoration(
@@ -72,7 +71,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
@@ -81,7 +79,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
@@ -91,7 +88,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
@@ -100,7 +96,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
-                  // TODO: Step 4 백엔드 POST /api/goods 연동
+                  // TODO: Step 4 — POST /api/goods 연동
                   Navigator.pop(context);
                 },
                 child: const Text('등록하기', style: TextStyle(fontSize: 16)),
@@ -118,32 +114,81 @@ class _CollectionScreenState extends State<CollectionScreen> {
       appBar: AppBar(
         title: const Text('내 컬렉션', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                '총 ${_dummyGoods.length}개',
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refresh,
+            tooltip: '새로고침',
           ),
         ],
       ),
-      body: _dummyGoods.isEmpty
-          ? const _EmptyCollectionView()
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.85,
+      body: FutureBuilder<List<GoodsItem>>(
+        future: _goodsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.wifi_off, size: 48, color: Colors.grey.shade400),
+                  const SizedBox(height: 12),
+                  Text(
+                    '서버에 연결할 수 없습니다',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '백엔드가 실행 중인지 확인하세요',
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(onPressed: _refresh, child: const Text('다시 시도')),
+                ],
               ),
-              itemCount: _dummyGoods.length,
-              itemBuilder: (context, index) {
-                return _GoodsCard(goods: _dummyGoods[index]);
-              },
-            ),
+            );
+          }
+
+          final goods = snapshot.data!;
+
+          if (goods.isEmpty) {
+            return const _EmptyCollectionView();
+          }
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Row(
+                  children: [
+                    Text(
+                      '총 ${goods.length}개',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemCount: goods.length,
+                  itemBuilder: (context, index) {
+                    return _GoodsCard(goods: goods[index]);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddGoodsSheet,
         backgroundColor: Colors.black,
@@ -154,7 +199,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
 }
 
 class _GoodsCard extends StatelessWidget {
-  final _GoodsItem goods;
+  final GoodsItem goods;
   const _GoodsCard({required this.goods});
 
   @override
@@ -197,7 +242,7 @@ class _GoodsCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '₩${goods.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}',
+                  goods.formattedPrice,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                 ),
               ],
@@ -222,7 +267,8 @@ class _EmptyCollectionView extends StatelessWidget {
           const SizedBox(height: 16),
           Text('아직 등록된 피규어가 없어요', style: TextStyle(color: Colors.grey.shade500)),
           const SizedBox(height: 8),
-          Text('+ 버튼을 눌러 첫 번째 피규어를 추가해보세요', style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+          Text('+ 버튼을 눌러 첫 번째 피규어를 추가해보세요',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
         ],
       ),
     );

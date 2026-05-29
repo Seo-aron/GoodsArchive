@@ -16,12 +16,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+    defer-datasource-initialization: true  # Hibernate 스키마 생성 후 data.sql 실행
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
     open-in-view: false
+
+  sql:
+    init:
+      mode: always     # 임베디드 DB에서 data.sql 항상 실행
+      encoding: UTF-8  # Windows 기본값(CP949) 대신 UTF-8로 SQL 파일 읽기
 
   # OAuth2 클라이언트 자동설정 비활성화 — FE가 Kakao SDK로 토큰을 발급해 전달하므로
   # Spring의 redirect 기반 OAuth2 로그인 플로우는 사용하지 않는다.
