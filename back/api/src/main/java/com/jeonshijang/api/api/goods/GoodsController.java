@@ -1,13 +1,20 @@
 package com.jeonshijang.api.api.goods;
 
+import com.jeonshijang.api.api.goods.dto.GoodsRegisterRequest;
 import com.jeonshijang.api.api.goods.dto.GoodsResponse;
 import com.jeonshijang.api.api.goods.dto.GoodsSummaryResponse;
+import com.jeonshijang.api.api.goods.dto.GoodsUpdateRequest;
+import com.jeonshijang.api.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -18,12 +25,43 @@ public class GoodsController {
     private final GoodsService goodsService;
 
     @GetMapping
-    public ResponseEntity<List<GoodsResponse>> getGoods() {
-        return ResponseEntity.ok(goodsService.getAllGoods());
+    public ResponseEntity<List<GoodsResponse>> getGoods(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(goodsService.getMyGoods(principal.getUserId()));
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<GoodsSummaryResponse> getSummary() {
-        return ResponseEntity.ok(goodsService.getSummary());
+    public ResponseEntity<GoodsSummaryResponse> getSummary(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(goodsService.getMySummary(principal.getUserId()));
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GoodsResponse> register(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestPart("image") MultipartFile image,
+            @RequestParam("name") String name,
+            @RequestParam(value = "price", required = false) BigDecimal price,
+            @RequestParam(value = "purchasedAt", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate purchasedAt,
+            @RequestParam(value = "memo", required = false) String memo) {
+        var request = new GoodsRegisterRequest(name, price, purchasedAt, memo);
+        return ResponseEntity.ok(goodsService.registerGoods(principal.getUserId(), image, request));
+    }
+
+    @PutMapping("/{goodsId}")
+    public ResponseEntity<GoodsResponse> update(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long goodsId,
+            @RequestBody GoodsUpdateRequest request) {
+        return ResponseEntity.ok(goodsService.updateGoods(goodsId, principal.getUserId(), request));
+    }
+
+    @DeleteMapping("/{goodsId}")
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long goodsId) {
+        goodsService.deleteGoods(goodsId, principal.getUserId());
+        return ResponseEntity.noContent().build();
     }
 }

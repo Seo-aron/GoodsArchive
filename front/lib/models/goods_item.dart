@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../services/api_client.dart';
 
 class GoodsItem {
   final int id;
@@ -21,7 +22,7 @@ class GoodsItem {
     return GoodsItem(
       id: json['id'] as int,
       name: json['name'] as String,
-      imageUrl: json['imageUrl'] as String,
+      imageUrl: ApiClient.toAbsoluteUrl(json['imageUrl'] as String),
       price: (json['price'] as num?)?.toDouble(),
       purchasedAt: json['purchasedAt'] as String?,
       memo: json['memo'] as String?,

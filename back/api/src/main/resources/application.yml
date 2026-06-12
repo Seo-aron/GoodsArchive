@@ -3,7 +3,7 @@ spring:
     name: jeonshijang-api
 
   datasource:
-    url: jdbc:h2:mem:jeonshijangdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./data/jeonshijangdb;MODE=MySQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -15,7 +15,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     defer-datasource-initialization: true  # Hibernate 스키마 생성 후 data.sql 실행
     show-sql: true
     properties:
@@ -26,8 +26,7 @@ spring:
 
   sql:
     init:
-      mode: always     # 임베디드 DB에서 data.sql 항상 실행
-      encoding: UTF-8  # Windows 기본값(CP949) 대신 UTF-8로 SQL 파일 읽기
+      mode: never
 
   # OAuth2 클라이언트 자동설정 비활성화 — FE가 Kakao SDK로 토큰을 발급해 전달하므로
   # Spring의 redirect 기반 OAuth2 로그인 플로우는 사용하지 않는다.
@@ -48,6 +47,9 @@ cloud:
       secret-key: ${AWS_SECRET_KEY:}
     region:
       static: ap-northeast-2
+
+app:
+  upload-dir: ./uploads
 
 server:
   port: 8080
