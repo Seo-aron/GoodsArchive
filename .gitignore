@@ -40,3 +40,8 @@ back/api/build/
 .project
 .settings
 .springBeans
+
+# =======================================================================
+# Frontend (Flutter / Dart)
+# =======================================================================
+front/lib/services/api_client.dart
