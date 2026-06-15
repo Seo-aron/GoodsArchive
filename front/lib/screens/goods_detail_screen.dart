@@ -1,0 +1,252 @@
+import 'package:flutter/material.dart';
+import '../models/goods_item.dart';
+import '../services/goods_service.dart';
+
+class GoodsDetailScreen extends StatefulWidget {
+  final GoodsItem goods;
+
+  const GoodsDetailScreen({super.key, required this.goods});
+
+  @override
+  State<GoodsDetailScreen> createState() => _GoodsDetailScreenState();
+}
+
+class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
+  late GoodsItem _goods;
+
+  @override
+  void initState() {
+    super.initState();
+    _goods = widget.goods;
+  }
+
+  Future<void> _showEditDialog() async {
+    final nameCtrl = TextEditingController(text: _goods.name);
+    final priceCtrl = TextEditingController(
+        text: _goods.price != null ? _goods.price!.toInt().toString() : '');
+    final memoCtrl = TextEditingController(text: _goods.memo ?? '');
+    bool saving = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('굿즈 수정'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(labelText: '이름 *'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: priceCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: '가격 (원)'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: memoCtrl,
+                  decoration: const InputDecoration(labelText: '메모'),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(ctx),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final name = nameCtrl.text.trim();
+                      if (name.isEmpty) return;
+                      setDialogState(() => saving = true);
+                      try {
+                        final priceText = priceCtrl.text.trim();
+                        final updated = await GoodsService.updateGoods(
+                          _goods.id,
+                          name: name,
+                          price: priceText.isNotEmpty
+                              ? double.tryParse(priceText)
+                              : null,
+                          memo: memoCtrl.text.trim(),
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (mounted) setState(() => _goods = updated);
+                      } catch (e) {
+                        setDialogState(() => saving = false);
+                        if (ctx.mounted) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            SnackBar(content: Text('수정 실패: $e')),
+                          );
+                        }
+                      }
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('저장', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('삭제 확인'),
+        content: Text('"${_goods.name}"을(를) 삭제하시겠습니까?\n삭제된 굿즈는 복구할 수 없습니다.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('삭제', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await GoodsService.deleteGoods(_goods.id);
+      if (mounted) Navigator.pop(context, 'deleted');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('삭제 실패: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 320,
+            pinned: true,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Image.network(
+                _goods.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.broken_image, size: 64, color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _goods.name,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _goods.formattedPrice,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (_goods.purchasedAt != null) ...[
+                    const SizedBox(height: 12),
+                    _InfoRow(label: '구매일', value: _goods.purchasedAt!),
+                  ],
+                  if (_goods.memo != null && _goods.memo!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _InfoRow(label: '메모', value: _goods.memo!),
+                  ],
+                  const SizedBox(height: 36),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _showEditDialog,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('수정'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _confirmDelete,
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('삭제'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 60,
+          child: Text(label,
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+        ),
+        Expanded(
+          child: Text(value,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+      ],
+    );
+  }
+}
