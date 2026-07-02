@@ -5,8 +5,8 @@ import 'token_storage.dart';
 
 class ApiClient {
   static String get baseUrl {
-    if (Platform.isIOS) return 'https://abc123.ngrok-free.app';
-    return 'https://abc123.ngrok-free.app';
+    if (Platform.isIOS) return 'https://tubeless-hamburger-shock.ngrok-free.dev';
+    return 'https://tubeless-hamburger-shock.ngrok-free.dev';
   }
 
   static Map<String, String> get _headers => {
