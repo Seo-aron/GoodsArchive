@@ -19,10 +19,11 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
     _userFuture = UserService.getMe();
   }
 
-  void _logout(BuildContext context) {
-    AuthService.logout();
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil('/login', (route) => false);
+  Future<void> _logout(BuildContext context) async {
+    await AuthService.logout();
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 
   @override

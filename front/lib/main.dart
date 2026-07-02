@@ -5,10 +5,12 @@ import 'screens/collection_screen.dart';
 import 'screens/showcase_screen.dart';
 import 'screens/record_screen.dart';
 import 'screens/my_info_screen.dart';
+import 'services/token_storage.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KakaoSdk.init(nativeAppKey: '15ee0f3418efcadef9e9c5ab3676c584');
+  await TokenStorage.init(); // 디바이스 보안 저장소에서 토큰 복원
   runApp(const ShowcaseApp());
 }
 
@@ -25,7 +27,7 @@ class ShowcaseApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey.shade50,
       ),
-      initialRoute: '/login',
+      initialRoute: TokenStorage.isLoggedIn ? '/home' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),
         '/home': (_) => const MainTabController(),

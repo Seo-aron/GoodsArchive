@@ -27,11 +27,11 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final token = TokenResponse.fromJson(jsonDecode(response.body));
-      TokenStorage.save(token.accessToken);
+      await TokenStorage.save(token.accessToken);
       return;
     }
     throw Exception('로그인 실패: ${response.statusCode}');
   }
 
-  static void logout() => TokenStorage.clear();
+  static Future<void> logout() => TokenStorage.clear();
 }

@@ -1,13 +1,27 @@
-// 메모리 기반 토큰 저장소
-// 앱 재시작 시 초기화됨 — 추후 flutter_secure_storage로 교체 권장
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 class TokenStorage {
+  static const _storage = FlutterSecureStorage();
+  static const _key = 'access_token';
+
+  // 앱 시작 시 한 번 로드해서 메모리에 캐싱
   static String? _accessToken;
 
-  static void save(String accessToken) => _accessToken = accessToken;
+  static Future<void> init() async {
+    _accessToken = await _storage.read(key: _key);
+  }
+
+  static Future<void> save(String accessToken) async {
+    _accessToken = accessToken;
+    await _storage.write(key: _key, value: accessToken);
+  }
+
+  static Future<void> clear() async {
+    _accessToken = null;
+    await _storage.delete(key: _key);
+  }
 
   static String? get accessToken => _accessToken;
 
   static bool get isLoggedIn => _accessToken != null;
-
-  static void clear() => _accessToken = null;
 }

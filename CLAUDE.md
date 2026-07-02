@@ -62,7 +62,7 @@ jeonshijang_app/
 | **백엔드** | Java 17, Spring Boot 3.3.5, Gradle 8.8 |
 | **보안** | Spring Security 6, JJWT 0.12.6 |
 | **ORM** | Spring Data JPA, Hibernate 6, QueryDSL 5.1 |
-| **DB** | H2 (인메모리, 개발용) → 추후 MySQL 전환 예정 |
+| **DB** | H2 (파일모드, 개발용) → 추후 MySQL 전환 예정 |
 | **스토리지** | 로컬 `./uploads/` 디렉토리 (프로토타입) → 추후 AWS S3 전환 예정 |
 | **HTTP 클라이언트** | Spring 6 RestClient (카카오 API 호출용) |
 | **프론트엔드** | Flutter (Dart), `kakao_flutter_sdk_user: ^1.9.7`, `http: ^1.2.2`, `image_picker: ^1.1.2` |
@@ -75,7 +75,8 @@ $env:JAVA_HOME="C:\Program Files\Java\jdk-17"; .\gradlew.bat bootRun
 ```
 
 * 서버 포트: `8080`
-* H2 콘솔: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:jeonshijangdb`)
+* H2 콘솔: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:file:./data/jeonshijangdb`)
+* DB 파일 경로: `back/api/data/jeonshijangdb.mv.db` (서버 재시작해도 데이터 유지)
 * 업로드 파일 경로: `back/api/uploads/` (서버 실행 디렉토리 기준 자동 생성)
 
 ### 프론트엔드 실행 방법
@@ -86,8 +87,10 @@ flutter pub get   # 최초 1회 또는 pubspec.yaml 변경 시
 flutter run
 ```
 
-* 실기기 → 백엔드 주소: `api_client.dart`의 `baseUrl`을 PC 로컬 IP로 변경 (현재: `192.168.1.49:8080`)
-* 에뮬레이터 → `10.0.2.2:8080`으로 변경
+* **외부 접근 (현재 방식)**: ngrok 고정 도메인 사용 중. `api_client.dart`의 `baseUrl`에 고정 도메인 세팅
+* ngrok 실행: `ngrok http --domain=고정도메인 8080`
+* `api_client.dart`는 `.gitignore` 처리됨 (baseUrl이 환경마다 다르기 때문)
+* 에뮬레이터 로컬 테스트 시: `http://10.0.2.2:8080`으로 변경
 
 ---
 
@@ -122,8 +125,8 @@ Flutter (kakao_flutter_sdk_user 1.10.0으로 카카오 토큰 발급)
 ```
 
 **주요 포인트**:
-* `kakao_flutter_sdk_user 1.10.0`: 순수 Kotlin 구현체. Maven Kakao SDK 불필요
-* Android Manifest에는 `com.kakao.sdk.flutter.AuthCodeCustomTabsActivity` 사용 (1.10.0 기준)
+* `kakao_flutter_sdk_user 1.9.7`: 순수 Kotlin 구현체. Maven Kakao SDK 불필요
+* Android Manifest에는 `com.kakao.sdk.flutter.AuthCodeCustomTabsActivity` 사용 (1.9.7 기준)
 * 카카오 디벨로퍼스 Redirect URI: `http://localhost:8080/api/auth/kakao` (더미 HTTP URL)
 * 커스텀 스킴(`kakao{앱키}://oauth`)은 AndroidManifest.xml에만 설정 (콘솔 등록 불필요)
 * 카카오 네이티브 앱 키: `15ee0f3418efcadef9e9c5ab3676c584`
@@ -179,30 +182,55 @@ Flutter (kakao_flutter_sdk_user 1.10.0으로 카카오 토큰 발급)
 
 ---
 
-## 4. 남은 작업 (MVP → 출시 기준)
+## 4. 미완성 기능 (현재 기준)
 
-### 🔲 Step 7 — 이미지 처리 고도화
+| 기능 | 현재 상태 | 비고 |
+| --- | --- | --- |
+| 전시장 줌인/아웃 | 드래그만 가능, 크기 조절 없음 | `scale` 필드는 DB에 존재하나 UI 미구현 |
+| 굿즈 이미지 수정 | 수정 시 이름/가격/메모만 변경 가능 | 이미지 교체 미구현 |
+| 공지사항 | 탭만 있고 내용 없음 | 추후 기획 필요 |
+
+---
+
+## 5. 남은 작업 (합의된 우선순위 순)
+
+### 🔲 Step 7 — JWT 토큰 영속화 ← 다음 작업
+
+* 현재 `TokenStorage`는 인메모리 → 앱 재시작 시 로그인 풀림
+* `flutter_secure_storage` 패키지로 디바이스 보안 저장소에 저장
+* 로그인 시 저장, 앱 시작 시 토큰 자동 복원, 로그아웃 시 삭제
+
+### 🔲 Step 8 — 전시장 줌인/아웃 (핀치 제스처)
+
+* `showcase_screen.dart`에 핀치 줌 제스처 추가
+* `ShowcaseItem.scale` 필드를 실제 UI에 반영하여 저장/복원
+
+### 🔲 Step 9 — 굿즈 이미지 수정
+
+* `goods_detail_screen.dart` 수정 다이얼로그에 이미지 교체 기능 추가
+* 백엔드 `PUT /api/goods/{id}` multipart 지원으로 확장 필요
+
+### 🔲 Step 10 — 디자인 작업
+
+* 전체 UI/UX 개선 (기능 완성 및 실기기 테스트 후 진행)
+
+### 🔲 Step 11 — 인프라 / 배포 준비
+
+* H2 → MySQL 전환 (`application-prod.yml` 프로파일 분리)
+* Docker + docker-compose 설정
+* GitHub Actions CI/CD 파이프라인
+* Android APK 빌드: `flutter build apk --release`
+* iOS 배포: Apple Developer 계정($99/년) + Mac + TestFlight
+
+### 🔲 Step 12 — 이미지 처리 고도화 (배포 이후)
 
 * 누끼(배경제거) AI API 연동 — 벤더 미확정 (remove.bg, rembg 등)
 * AWS S3 업로드로 전환 (`GoodsService.saveImage()` 내부만 교체)
 * 환경변수 세팅: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_S3_BUCKET`
 
-### 🔲 Step 8 — JWT 토큰 영속화
-
-* 현재 `TokenStorage`는 인메모리 → 앱 재시작 시 로그인 풀림
-* `flutter_secure_storage` 패키지로 디바이스 보안 저장소에 저장 필요
-
-### 🔲 Step 9 — 인프라 / 배포 준비
-
-* H2 → MySQL 전환 (`application-prod.yml` 프로파일 분리)
-* Docker + docker-compose 설정
-* GitHub Actions CI/CD 파이프라인
-* Android APK 빌드 및 배포: `flutter build apk --release`
-* iOS 배포: Apple Developer 계정($99/년) + Mac + TestFlight
-
 ---
 
-## 5. 환경변수 목록
+## 6. 환경변수 목록
 
 | 변수명 | 설명 | 기본값(로컬) |
 | --- | --- | --- |
@@ -213,7 +241,7 @@ Flutter (kakao_flutter_sdk_user 1.10.0으로 카카오 토큰 발급)
 
 ---
 
-## 6. 개발 시 유의사항
+## 7. 개발 시 유의사항
 
 * **실기기 IP 변경**: `front/lib/services/api_client.dart`의 `baseUrl` Android 분기값을 PC 로컬 IP로 세팅
 * **에뮬레이터 한글 입력**: 에뮬레이터 설정 → General management → Keyboard → Gboard → Languages → Korean 추가
