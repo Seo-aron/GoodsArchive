@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/goods_item.dart';
-import '../models/showcase_data.dart';
 import '../services/goods_service.dart';
 import '../services/showcase_service.dart';
 
@@ -13,8 +12,8 @@ class ShowcaseScreen extends StatefulWidget {
 
 class _ShowcaseScreenState extends State<ShowcaseScreen> {
   List<GoodsItem> _goods = [];
-  // goodsId -> 캔버스 내 상대 좌표 (0.0 ~ 1.0)
   Map<int, Offset> _positions = {};
+  Map<int, double> _scales = {};
   int? _showcaseId;
   bool _loading = true;
   bool _saving = false;
@@ -32,9 +31,10 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
       final showcase = await ShowcaseService.getMyShowcase();
 
       final savedPositions = <int, Offset>{};
+      final savedScales = <int, double>{};
       for (final item in showcase.items) {
-        savedPositions[item.goodsId] =
-            Offset(item.positionX, item.positionY);
+        savedPositions[item.goodsId] = Offset(item.positionX, item.positionY);
+        savedScales[item.goodsId] = item.scale;
       }
 
       // 저장된 위치 없는 굿즈는 격자 배치
@@ -45,6 +45,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
             0.15 + (i % 3) * 0.3,
             0.1 + (i ~/ 3) * 0.25,
           );
+          savedScales[g.id] = 1.0;
           i++;
         }
       }
@@ -53,6 +54,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
         _goods = goods;
         _showcaseId = showcase.id;
         _positions = savedPositions;
+        _scales = savedScales;
         _loading = false;
       });
     } catch (e) {
@@ -72,7 +74,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
                 goodsId: g.id,
                 positionX: (_positions[g.id] ?? const Offset(0.5, 0.5)).dx,
                 positionY: (_positions[g.id] ?? const Offset(0.5, 0.5)).dy,
-                scale: 1.0,
+                scale: _scales[g.id] ?? 1.0,
               ))
           .toList();
       await ShowcaseService.placeItems(_showcaseId!, items);
@@ -182,21 +184,26 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
-                    '피규어를 드래그해서 배치하세요',
+                    '드래그로 이동 · 핀치로 크기 조절',
                     style: TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                 ),
               ),
             ),
-            // 굿즈 아이템 (드래그 가능)
+            // 굿즈 아이템 (드래그 + 핀치 줌)
             ..._goods.map((goods) {
               return _DraggableGoodsItem(
+                key: ValueKey(goods.id),
                 goods: goods,
                 position: _positions[goods.id] ?? const Offset(0.5, 0.5),
+                scale: _scales[goods.id] ?? 1.0,
                 canvasWidth: w,
                 canvasHeight: h,
                 onPositionChanged: (newPos) {
                   setState(() => _positions[goods.id] = newPos);
+                },
+                onScaleChanged: (newScale) {
+                  setState(() => _scales[goods.id] = newScale);
                 },
               );
             }),
@@ -207,45 +214,69 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
   }
 }
 
-class _DraggableGoodsItem extends StatelessWidget {
-  static const double _itemSize = 72.0;
+class _DraggableGoodsItem extends StatefulWidget {
+  static const double baseSize = 72.0;
 
   final GoodsItem goods;
-  final Offset position; // 0.0 ~ 1.0 상대 좌표
+  final Offset position;
+  final double scale;
   final double canvasWidth;
   final double canvasHeight;
   final ValueChanged<Offset> onPositionChanged;
+  final ValueChanged<double> onScaleChanged;
 
   const _DraggableGoodsItem({
+    super.key,
     required this.goods,
     required this.position,
+    required this.scale,
     required this.canvasWidth,
     required this.canvasHeight,
     required this.onPositionChanged,
+    required this.onScaleChanged,
   });
 
   @override
+  State<_DraggableGoodsItem> createState() => _DraggableGoodsItemState();
+}
+
+class _DraggableGoodsItemState extends State<_DraggableGoodsItem> {
+  double _baseScale = 1.0;
+
+  @override
   Widget build(BuildContext context) {
-    final left = position.dx * canvasWidth - _itemSize / 2;
-    final top = position.dy * canvasHeight - _itemSize / 2;
+    final itemSize = _DraggableGoodsItem.baseSize * widget.scale;
+    final left = widget.position.dx * widget.canvasWidth - itemSize / 2;
+    final top = widget.position.dy * widget.canvasHeight - itemSize / 2;
 
     return Positioned(
-      left: left.clamp(0, canvasWidth - _itemSize),
-      top: top.clamp(0, canvasHeight - _itemSize),
+      left: left.clamp(0, widget.canvasWidth - itemSize),
+      top: top.clamp(0, widget.canvasHeight - itemSize),
       child: GestureDetector(
-        onPanUpdate: (details) {
-          final newDx =
-              (position.dx + details.delta.dx / canvasWidth).clamp(0.05, 0.95);
-          final newDy =
-              (position.dy + details.delta.dy / canvasHeight).clamp(0.05, 0.95);
-          onPositionChanged(Offset(newDx, newDy));
+        onScaleStart: (_) {
+          _baseScale = widget.scale;
+        },
+        onScaleUpdate: (details) {
+          if (details.pointerCount >= 2) {
+            final newScale =
+                (_baseScale * details.scale).clamp(0.3, 3.0);
+            widget.onScaleChanged(newScale);
+          } else {
+            final newDx = (widget.position.dx +
+                    details.focalPointDelta.dx / widget.canvasWidth)
+                .clamp(0.05, 0.95);
+            final newDy = (widget.position.dy +
+                    details.focalPointDelta.dy / widget.canvasHeight)
+                .clamp(0.05, 0.95);
+            widget.onPositionChanged(Offset(newDx, newDy));
+          }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: _itemSize,
-              height: _itemSize,
+              width: itemSize,
+              height: itemSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.white24, width: 1.5),
@@ -256,9 +287,9 @@ class _DraggableGoodsItem extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(9),
                 child: Image.network(
-                  goods.imageUrl,
+                  widget.goods.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (ctx, err, st) => Container(
                     color: const Color(0xFF2A2A4A),
                     child: const Icon(Icons.broken_image,
                         color: Colors.white38, size: 28),
@@ -268,14 +299,14 @@ class _DraggableGoodsItem extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              constraints: BoxConstraints(maxWidth: itemSize),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                goods.name,
+                widget.goods.name,
                 style: const TextStyle(color: Colors.white70, fontSize: 9),
                 overflow: TextOverflow.ellipsis,
               ),
