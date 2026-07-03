@@ -1,4 +1,4 @@
-# 전시장(Jeonshijang) 프로젝트 인수인계
+﻿# 전시장(Jeonshijang) 프로젝트 인수인계
 
 > 디지털 굿즈/피규어를 등록하고 2D 가상 장식장에 배치하는 앱
 
@@ -23,12 +23,12 @@ jeonshijang_app/
 │       │   ├── login_screen.dart
 │       │   ├── collection_screen.dart   ← 굿즈 목록, 등록(+버튼), 카드탭→상세
 │       │   ├── goods_detail_screen.dart ← 굿즈 상세 + 수정/삭제
-│       │   ├── showcase_screen.dart     ← 2D 드래그 배치 + 저장
+│       │   ├── showcase_screen.dart     ← 2D 드래그 배치 + 핀치 줌 + 저장
 │       │   ├── record_screen.dart       ← 수집 통계 대시보드
 │       │   └── my_info_screen.dart      ← 프로필 + 로그아웃
 │       └── services/
 │           ├── api_client.dart     ← 공통 HTTP 클라이언트 (JWT 헤더 자동 주입)
-│           ├── token_storage.dart  ← 인메모리 JWT 토큰 관리
+│           ├── token_storage.dart  ← 디바이스 보안 저장소 기반 JWT 토큰 관리 (flutter_secure_storage)
 │           ├── auth_service.dart   ← 카카오 로그인, 로그아웃
 │           ├── goods_service.dart  ← 굿즈 CRUD + 이미지 멀티파트 업로드
 │           ├── summary_service.dart
@@ -65,7 +65,7 @@ jeonshijang_app/
 | **DB** | H2 (파일모드, 개발용) → 추후 MySQL 전환 예정 |
 | **스토리지** | 로컬 `./uploads/` 디렉토리 (프로토타입) → 추후 AWS S3 전환 예정 |
 | **HTTP 클라이언트** | Spring 6 RestClient (카카오 API 호출용) |
-| **프론트엔드** | Flutter (Dart), `kakao_flutter_sdk_user: ^1.9.7`, `http: ^1.2.2`, `image_picker: ^1.1.2` |
+| **프론트엔드** | Flutter (Dart), `kakao_flutter_sdk_user: ^1.9.7`, `http: ^1.2.2`, `image_picker: ^1.1.2`, `flutter_secure_storage: ^9.2.2` |
 
 ### 백엔드 실행 방법
 
@@ -180,30 +180,39 @@ Flutter (kakao_flutter_sdk_user 1.10.0으로 카카오 토큰 발급)
 | 기록 | `record_screen.dart` | GET `/api/goods/summary` |
 | 내정보 | `my_info_screen.dart` | GET `/api/users/me` |
 
+### ✅ Step 7 — JWT 토큰 영속화
+
+**변경 파일**: , 
+
+*  패키지로 디바이스 보안 저장소에 JWT 저장
+*  async화 →  호출로 앱 시작 시 토큰 자동 복원
+* : 토큰 존재 시 , 없으면  으로 자동 분기
+* 로그아웃 시  → 저장소에서도 완전 삭제
+
+### ✅ Step 8 — 전시장 핀치 줌 (개별 아이템 크기 조절)
+
+**변경 파일**: 
+
+*  →  으로 전환
+*  제거 →  로 통합 (1손가락=드래그, 2손가락=핀치)
+*  상태 추가 — 아이템별 개별 scale 관리
+* 아이템 시각 크기:  (0.3× ~ 3.0× 범위 제한)
+* scale 값 DB 저장/복원:  연동, 앱 재시작 시 복원
+* 에뮬레이터 핀치:  (화면 중앙 기준 대칭 터치 — 아이템을 중앙 근처에 놓고 테스트)
+
+
 ---
 
 ## 4. 미완성 기능 (현재 기준)
 
 | 기능 | 현재 상태 | 비고 |
 | --- | --- | --- |
-| 전시장 줌인/아웃 | 드래그만 가능, 크기 조절 없음 | `scale` 필드는 DB에 존재하나 UI 미구현 |
 | 굿즈 이미지 수정 | 수정 시 이름/가격/메모만 변경 가능 | 이미지 교체 미구현 |
 | 공지사항 | 탭만 있고 내용 없음 | 추후 기획 필요 |
 
 ---
 
 ## 5. 남은 작업 (합의된 우선순위 순)
-
-### 🔲 Step 7 — JWT 토큰 영속화 ← 다음 작업
-
-* 현재 `TokenStorage`는 인메모리 → 앱 재시작 시 로그인 풀림
-* `flutter_secure_storage` 패키지로 디바이스 보안 저장소에 저장
-* 로그인 시 저장, 앱 시작 시 토큰 자동 복원, 로그아웃 시 삭제
-
-### 🔲 Step 8 — 전시장 줌인/아웃 (핀치 제스처)
-
-* `showcase_screen.dart`에 핀치 줌 제스처 추가
-* `ShowcaseItem.scale` 필드를 실제 UI에 반영하여 저장/복원
 
 ### 🔲 Step 9 — 굿즈 이미지 수정
 
