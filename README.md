@@ -2,7 +2,7 @@
 
 > 덕질 라이프를 기록하는 굿즈 아카이빙 서비스의 백엔드 시스템
 
-<img width="1280" height="2856" alt="Screenshot_1783325737" src="https://github.com/user-attachments/assets/aea0211c-507b-4a7d-a5a3-fc9d2436aa11" />
+<img width="400" height="800" alt="Screenshot_1783325737" src="https://github.com/user-attachments/assets/aea0211c-507b-4a7d-a5a3-fc9d2436aa11" />
 
 [로그인 화면]
 
@@ -155,13 +155,13 @@ cd back/api
 
 ## Screenshots
 
-[<img width="1280" height="2856" alt="Screenshot_1783325811" src="https://github.com/user-attachments/assets/e8a8faa3-f8ab-476d-bc45-4663bdf2f9e5" />
+[<img width="400" height="800" alt="Screenshot_1783325811" src="https://github.com/user-attachments/assets/e8a8faa3-f8ab-476d-bc45-4663bdf2f9e5" />
 [컬렉션 화면]
 
-<img width="1280" height="2856" alt="Screenshot_1783325813" src="https://github.com/user-attachments/assets/71c7dd2e-e97c-47da-b007-754993620cc8" />
+<img width="400" height="800" alt="Screenshot_1783325813" src="https://github.com/user-attachments/assets/71c7dd2e-e97c-47da-b007-754993620cc8" />
 [전시장 화면]
 
-<img width="1280" height="2856" alt="Screenshot_1783325820" src="https://github.com/user-attachments/assets/5aa0ef01-6d62-4d43-a821-decc4b3d93a2" />
+<img width="400" height="800" alt="Screenshot_1783325820" src="https://github.com/user-attachments/assets/5aa0ef01-6d62-4d43-a821-decc4b3d93a2" />
 [기록/통계 화면]
 
 ---
