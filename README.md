@@ -157,7 +157,7 @@ cd back/api
 
 [컬렉션 화면]
 <br>
-[<img width="400" height="800" alt="Screenshot_1783325811" src="https://github.com/user-attachments/assets/e8a8faa3-f8ab-476d-bc45-4663bdf2f9e5" />
+<img width="400" height="800" alt="Screenshot_1783325811" src="https://github.com/user-attachments/assets/e8a8faa3-f8ab-476d-bc45-4663bdf2f9e5" />
 <br>
 [전시장 화면]
 <br>
