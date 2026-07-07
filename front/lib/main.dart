@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 import 'screens/collection_screen.dart';
 import 'screens/showcase_screen.dart';
 import 'screens/record_screen.dart';
@@ -30,6 +31,7 @@ class ShowcaseApp extends StatelessWidget {
       initialRoute: TokenStorage.isLoggedIn ? '/home' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(),
         '/home': (_) => const MainTabController(),
       },
     );

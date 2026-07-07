@@ -9,39 +9,54 @@ import lombok.*;
  */
 @Entity
 @Table(
-    name = "users", // DB에서 예약어 충돌을 피하기 위해 보통 복수형(users)을 사용합니다.
-    uniqueConstraints = @UniqueConstraint(name = "uk_users_kakao_id", columnNames = "kakao_id") // 핵심: 카카오 ID는 중복될 수 없도록 고유(Unique) 제약조건을 설정합니다.
+    name = "users",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_users_kakao_id", columnNames = "kakao_id"),
+        @UniqueConstraint(name = "uk_users_login_id", columnNames = "login_id")
+    }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity { // BaseEntity를 상속받아 생성일(createdAt)과 수정일(updatedAt)을 자동으로 관리합니다.
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "kakao_id", nullable = false)
-    private Long kakaoId; // 카카오 로그인 시 발급받는 고유 사용자 ID
+    @Column(name = "kakao_id")
+    private Long kakaoId;
 
-    private String nickname; // 닉네임
+    @Column(name = "login_id")
+    private String loginId;
 
-    private String profileImageUrl; // 프로필 이미지 URL
+    private String password;
 
-    @Enumerated(EnumType.STRING) // 핵심: Enum 값을 DB에 저장할 때 숫자가 아닌 문자열(USER, ADMIN 등)로 저장하도록 설정합니다.
+    private String nickname;
+
+    private String profileImageUrl;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role; // 사용자 권한 등급
+    private UserRole role;
 
-    @Builder
-    public User(Long kakaoId, String nickname, String profileImageUrl) {
-        this.kakaoId = kakaoId;
-        this.nickname = nickname;
-        this.profileImageUrl = profileImageUrl;
-        this.role = UserRole.USER; // 기본 권한은 일반 유저(USER)로 설정
+    public static User ofKakao(Long kakaoId, String nickname, String profileImageUrl) {
+        User user = new User();
+        user.kakaoId = kakaoId;
+        user.nickname = nickname;
+        user.profileImageUrl = profileImageUrl;
+        user.role = UserRole.USER;
+        return user;
     }
 
-    /**
-     * 역할: 회원의 프로필 정보(닉네임, 프로필 이미지)를 수정합니다.
-     */
+    public static User ofLocal(String loginId, String password, String nickname) {
+        User user = new User();
+        user.loginId = loginId;
+        user.password = password;
+        user.nickname = nickname;
+        user.role = UserRole.USER;
+        return user;
+    }
+
     public void updateProfile(String nickname, String profileImageUrl) {
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;

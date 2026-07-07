@@ -14,4 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 핵심: 주로 카카오 로그인 시 이미 가입된 회원인지 확인하기 위해 사용됩니다.
      */
     Optional<User> findByKakaoId(Long kakaoId);
+
+    Optional<User> findByLoginId(String loginId);
+
+    boolean existsByLoginId(String loginId);
 }

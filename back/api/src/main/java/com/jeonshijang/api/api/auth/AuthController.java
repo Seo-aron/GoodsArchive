@@ -1,7 +1,9 @@
 package com.jeonshijang.api.api.auth;
 
 import com.jeonshijang.api.api.auth.dto.KakaoLoginRequest;
+import com.jeonshijang.api.api.auth.dto.LoginRequest;
 import com.jeonshijang.api.api.auth.dto.RefreshRequest;
+import com.jeonshijang.api.api.auth.dto.RegisterRequest;
 import com.jeonshijang.api.api.auth.dto.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +39,18 @@ public class AuthController {
      * 엔드포인트: POST /api/auth/refresh
      * 요청 본문(Body): { "refreshToken": "기존에 발급받았던 리프레시 토큰 문자열" }
      */
+    @PostMapping("/register")
+    public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
-        // 핵심: AuthService에 토큰 재발급 로직을 위임하고 새 토큰들을 반환합니다.
         return ResponseEntity.ok(authService.refresh(request.refreshToken()));
     }
 }
