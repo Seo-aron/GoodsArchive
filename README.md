@@ -1,14 +1,16 @@
-# {프로젝트명}
+# 나만의 전시장 (가칭)
 
 > 덕질 라이프를 기록하는 굿즈 아카이빙 서비스의 백엔드 시스템
 
-[사진첨부 — 앱 대표 스크린샷 또는 배너]
+<img width="400" height="800" alt="Screenshot_1783325737" src="https://github.com/user-attachments/assets/aea0211c-507b-4a7d-a5a3-fc9d2436aa11" />
+
+[로그인 화면]
 
 ---
 
 ## Overview
 
-{프로젝트명}은 사용자가 구매한 다양한 굿즈(덕질 용품) 정보를 등록·관리하고, 나만의 가상 전시장에 배치하여 컬렉션을 시각적으로 아카이빙할 수 있는 모바일 애플리케이션의 백엔드 시스템입니다.
+나만의 전시장 (가칭)은 사용자가 구매한 다양한 굿즈(덕질 용품) 정보를 등록·관리하고, 나만의 가상 전시장에 배치하여 컬렉션을 시각적으로 아카이빙할 수 있는 모바일 애플리케이션의 백엔드 시스템입니다.
 
 단순한 목록 관리를 넘어, 소비 패턴 분석과 컬렉션 큐레이션 기능을 통해 사용자가 자신의 덕질 라이프를 체계적으로 기록할 수 있도록 설계되었습니다.
 
@@ -153,12 +155,18 @@ cd back/api
 
 ## Screenshots
 
-[사진첨부 — 컬렉션 화면]
-
-[사진첨부 — 전시장 화면]
-
-[사진첨부 — 기록/통계 화면]
-
+[컬렉션 화면]
+<br>
+<img width="400" height="800" alt="Screenshot_1783325811" src="https://github.com/user-attachments/assets/e8a8faa3-f8ab-476d-bc45-4663bdf2f9e5" />
+<br>
+[전시장 화면]
+<br>
+<img width="400" height="800" alt="Screenshot_1783325813" src="https://github.com/user-attachments/assets/71c7dd2e-e97c-47da-b007-754993620cc8" />
+<br>
+[기록/통계 화면]
+<br>
+<img width="400" height="800" alt="Screenshot_1783325820" src="https://github.com/user-attachments/assets/5aa0ef01-6d62-4d43-a821-decc4b3d93a2" />
+<br>
 ---
 
 ## Version
