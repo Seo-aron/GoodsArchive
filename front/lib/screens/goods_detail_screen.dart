@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/goods_item.dart';
 import '../services/goods_service.dart';
 
@@ -25,6 +26,7 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
     final priceCtrl = TextEditingController(
         text: _goods.price != null ? _goods.price!.toInt().toString() : '');
     final memoCtrl = TextEditingController(text: _goods.memo ?? '');
+    XFile? pickedImage;
     bool saving = false;
 
     await showDialog(
@@ -37,6 +39,71 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 이미지 선택 영역
+                GestureDetector(
+                  onTap: () async {
+                    final source = await showDialog<ImageSource>(
+                      context: ctx,
+                      builder: (c) => SimpleDialog(
+                        title: const Text('이미지 선택'),
+                        children: [
+                          SimpleDialogOption(
+                            onPressed: () => Navigator.pop(c, ImageSource.camera),
+                            child: const Text('카메라'),
+                          ),
+                          SimpleDialogOption(
+                            onPressed: () => Navigator.pop(c, ImageSource.gallery),
+                            child: const Text('갤러리'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (source == null) return;
+                    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+                    if (picked != null) setDialogState(() => pickedImage = picked);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          pickedImage != null
+                              ? Image.network(pickedImage!.path, fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) =>
+                                      Image.network(_goods.imageUrl, fit: BoxFit.cover))
+                              : Image.network(_goods.imageUrl, fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) => const Icon(Icons.broken_image)),
+                          Positioned(
+                            right: 8, bottom: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                                  SizedBox(width: 4),
+                                  Text('변경', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: nameCtrl,
                   decoration: const InputDecoration(labelText: '이름 *'),
@@ -73,10 +140,9 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
                         final updated = await GoodsService.updateGoods(
                           _goods.id,
                           name: name,
-                          price: priceText.isNotEmpty
-                              ? double.tryParse(priceText)
-                              : null,
+                          price: priceText.isNotEmpty ? double.tryParse(priceText) : null,
                           memo: memoCtrl.text.trim(),
+                          image: pickedImage,
                         );
                         if (ctx.mounted) Navigator.pop(ctx);
                         if (mounted) setState(() => _goods = updated);
@@ -150,7 +216,7 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
               background: Image.network(
                 _goods.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stack) => Container(
                   color: Colors.grey.shade200,
                   child: const Icon(Icons.broken_image, size: 64, color: Colors.grey),
                 ),

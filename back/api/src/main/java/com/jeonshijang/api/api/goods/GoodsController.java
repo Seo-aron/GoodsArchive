@@ -49,12 +49,16 @@ public class GoodsController {
         return ResponseEntity.ok(goodsService.registerGoods(principal.getUserId(), image, request));
     }
 
-    @PutMapping("/{goodsId}")
+    @PutMapping(value = "/{goodsId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<GoodsResponse> update(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long goodsId,
-            @RequestBody GoodsUpdateRequest request) {
-        return ResponseEntity.ok(goodsService.updateGoods(goodsId, principal.getUserId(), request));
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam("name") String name,
+            @RequestParam(value = "price", required = false) BigDecimal price,
+            @RequestParam(value = "memo", required = false) String memo) {
+        var request = new GoodsUpdateRequest(name, price, memo);
+        return ResponseEntity.ok(goodsService.updateGoods(goodsId, principal.getUserId(), image, request));
     }
 
     @DeleteMapping("/{goodsId}")

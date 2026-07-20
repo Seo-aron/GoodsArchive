@@ -69,11 +69,14 @@ public class GoodsService {
     }
 
     @Transactional
-    public GoodsResponse updateGoods(Long goodsId, Long userId, GoodsUpdateRequest request) {
+    public GoodsResponse updateGoods(Long goodsId, Long userId, MultipartFile image, GoodsUpdateRequest request) {
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
         if (!goods.getUser().getId().equals(userId)) {
             throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        if (image != null && !image.isEmpty()) {
+            goods.updateImageUrl(saveImage(image));
         }
         goods.updateDetails(request.name(), goods.getPurchasedAt(), request.price(), request.memo());
         return GoodsResponse.from(goods);

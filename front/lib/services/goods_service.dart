@@ -46,12 +46,25 @@ class GoodsService {
     required String name,
     double? price,
     String? memo,
+    XFile? image,
   }) async {
-    final response = await ApiClient.put('/api/goods/$goodsId', {
-      'name': name,
-      if (price != null) 'price': price,
-      if (memo != null && memo.isNotEmpty) 'memo': memo,
-    });
+    final uri = Uri.parse('${ApiClient.baseUrl}/api/goods/$goodsId');
+    final request = http.MultipartRequest('PUT', uri);
+
+    if (TokenStorage.accessToken != null) {
+      request.headers['Authorization'] = 'Bearer ${TokenStorage.accessToken}';
+    }
+
+    if (image != null) {
+      request.files.add(await http.MultipartFile.fromPath('image', image.path));
+    }
+    request.fields['name'] = name;
+    if (price != null) request.fields['price'] = price.toStringAsFixed(0);
+    if (memo != null && memo.isNotEmpty) request.fields['memo'] = memo;
+
+    final streamed = await request.send().timeout(const Duration(seconds: 30));
+    final response = await http.Response.fromStream(streamed);
+
     if (response.statusCode == 200) {
       return GoodsItem.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
     }

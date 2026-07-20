@@ -70,6 +70,10 @@ public class Goods extends BaseEntity { // BaseEntity를 상속받아 생성일(
         this.memo = memo;
     }
 
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     /**
      * 역할: 상품을 실제로 삭제하는 대신, 삭제 시간을 기록하여 '삭제된 상태'로 변경합니다. (Soft Delete)
      */
