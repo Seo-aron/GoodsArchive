@@ -56,8 +56,10 @@ public class GoodsController {
             @RequestPart(value = "image", required = false) MultipartFile image,
             @RequestParam("name") String name,
             @RequestParam(value = "price", required = false) BigDecimal price,
+            @RequestParam(value = "purchasedAt", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate purchasedAt,
             @RequestParam(value = "memo", required = false) String memo) {
-        var request = new GoodsUpdateRequest(name, price, memo);
+        var request = new GoodsUpdateRequest(name, price, memo, purchasedAt);
         return ResponseEntity.ok(goodsService.updateGoods(goodsId, principal.getUserId(), image, request));
     }
 

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,7 +79,8 @@ public class GoodsService {
         if (image != null && !image.isEmpty()) {
             goods.updateImageUrl(saveImage(image));
         }
-        goods.updateDetails(request.name(), goods.getPurchasedAt(), request.price(), request.memo());
+        LocalDate purchasedAt = request.purchasedAt() != null ? request.purchasedAt() : goods.getPurchasedAt();
+        goods.updateDetails(request.name(), purchasedAt, request.price(), request.memo());
         return GoodsResponse.from(goods);
     }
 

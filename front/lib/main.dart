@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -7,6 +8,7 @@ import 'screens/showcase_screen.dart';
 import 'screens/record_screen.dart';
 import 'screens/my_info_screen.dart';
 import 'services/token_storage.dart';
+import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +25,9 @@ class ShowcaseApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '피규어 쇼케이스',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.grey.shade50,
-      ),
+      theme: AppTheme.light,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en')],
       initialRoute: TokenStorage.isLoggedIn ? '/home' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),
@@ -60,22 +60,31 @@ class _MainTabControllerState extends State<MainTabController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex], // 현재 인덱스에 맞는 화면을 바디에 뿌려줌
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index; // 탭을 누르면 화면 전환
-          });
-        },
-        type: BottomNavigationBarType.fixed, // 탭이 4개 이상일 때 고정
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: '컬렉션'),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), label: '전시장'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: '기록'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '내정보'),
+      body: _screens[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2),
+            label: '컬렉션',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront),
+            label: '전시장',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: '기록',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: '내정보',
+          ),
         ],
       ),
     );

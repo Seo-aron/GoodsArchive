@@ -21,12 +21,20 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
     _goods = widget.goods;
   }
 
+  String _isoDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  String _displayDate(DateTime d) => '${d.year}년 ${d.month}월 ${d.day}일';
+
   Future<void> _showEditDialog() async {
     final nameCtrl = TextEditingController(text: _goods.name);
     final priceCtrl = TextEditingController(
         text: _goods.price != null ? _goods.price!.toInt().toString() : '');
     final memoCtrl = TextEditingController(text: _goods.memo ?? '');
     XFile? pickedImage;
+    DateTime? editedPurchasedAt = _goods.purchasedAt != null
+        ? DateTime.tryParse(_goods.purchasedAt!)
+        : null;
     bool saving = false;
 
     await showDialog(
@@ -115,6 +123,56 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
                   decoration: const InputDecoration(labelText: '가격 (원)'),
                 ),
                 const SizedBox(height: 12),
+                // 날짜 선택
+                InkWell(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: ctx,
+                      initialDate: editedPurchasedAt ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                      locale: const Locale('ko', 'KR'),
+                      helpText: '구매 날짜 선택',
+                      cancelText: '취소',
+                      confirmText: '확인',
+                    );
+                    if (date != null) setDialogState(() => editedPurchasedAt = date);
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF5FB),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today_outlined,
+                            size: 16, color: Colors.grey.shade600),
+                        const SizedBox(width: 8),
+                        Text(
+                          editedPurchasedAt != null
+                              ? _displayDate(editedPurchasedAt!)
+                              : '구매 날짜 (선택)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: editedPurchasedAt != null
+                                ? Colors.black87
+                                : Colors.grey.shade500,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (editedPurchasedAt != null)
+                          GestureDetector(
+                            onTap: () => setDialogState(() => editedPurchasedAt = null),
+                            child: Icon(Icons.close,
+                                size: 16, color: Colors.grey.shade500),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: memoCtrl,
                   decoration: const InputDecoration(labelText: '메모'),
@@ -141,6 +199,9 @@ class _GoodsDetailScreenState extends State<GoodsDetailScreen> {
                           _goods.id,
                           name: name,
                           price: priceText.isNotEmpty ? double.tryParse(priceText) : null,
+                          purchasedAt: editedPurchasedAt != null
+                              ? _isoDate(editedPurchasedAt!)
+                              : null,
                           memo: memoCtrl.text.trim(),
                           image: pickedImage,
                         );

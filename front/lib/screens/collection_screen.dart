@@ -145,6 +145,7 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
   final _memoController = TextEditingController();
   final _picker = ImagePicker();
   XFile? _selectedImage;
+  DateTime? _purchasedAt;
   bool _submitting = false;
 
   @override
@@ -153,6 +154,25 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
     _priceController.dispose();
     _memoController.dispose();
     super.dispose();
+  }
+
+  String _isoDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  String _displayDate(DateTime d) => '${d.year}년 ${d.month}월 ${d.day}일';
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _purchasedAt ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      locale: const Locale('ko', 'KR'),
+      helpText: '구매 날짜 선택',
+      cancelText: '취소',
+      confirmText: '확인',
+    );
+    if (date != null && mounted) setState(() => _purchasedAt = date);
   }
 
   Future<void> _pickImage() async {
@@ -214,6 +234,7 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
         image: _selectedImage!,
         name: name,
         price: price,
+        purchasedAt: _purchasedAt != null ? _isoDate(_purchasedAt!) : null,
         memo: _memoController.text.trim(),
       );
 
@@ -286,6 +307,44 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
               decoration: InputDecoration(
                 labelText: '구매 가격 (원)',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 날짜 선택
+            InkWell(
+              onTap: _pickDate,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF5FB),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        size: 18, color: Colors.grey.shade600),
+                    const SizedBox(width: 10),
+                    Text(
+                      _purchasedAt != null
+                          ? _displayDate(_purchasedAt!)
+                          : '구매 날짜 (선택)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _purchasedAt != null
+                            ? Colors.black87
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (_purchasedAt != null)
+                      GestureDetector(
+                        onTap: () => setState(() => _purchasedAt = null),
+                        child: Icon(Icons.close,
+                            size: 18, color: Colors.grey.shade500),
+                      ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),

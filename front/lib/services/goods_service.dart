@@ -19,6 +19,7 @@ class GoodsService {
     required XFile image,
     required String name,
     double? price,
+    String? purchasedAt,
     String? memo,
   }) async {
     final uri = Uri.parse('${ApiClient.baseUrl}/api/goods');
@@ -31,6 +32,7 @@ class GoodsService {
     request.files.add(await http.MultipartFile.fromPath('image', image.path));
     request.fields['name'] = name;
     if (price != null) request.fields['price'] = price.toStringAsFixed(0);
+    if (purchasedAt != null) request.fields['purchasedAt'] = purchasedAt;
     if (memo != null && memo.isNotEmpty) request.fields['memo'] = memo;
 
     final streamed = await request.send().timeout(const Duration(seconds: 30));
@@ -45,6 +47,7 @@ class GoodsService {
   static Future<GoodsItem> updateGoods(int goodsId, {
     required String name,
     double? price,
+    String? purchasedAt,
     String? memo,
     XFile? image,
   }) async {
@@ -60,6 +63,7 @@ class GoodsService {
     }
     request.fields['name'] = name;
     if (price != null) request.fields['price'] = price.toStringAsFixed(0);
+    if (purchasedAt != null) request.fields['purchasedAt'] = purchasedAt;
     if (memo != null && memo.isNotEmpty) request.fields['memo'] = memo;
 
     final streamed = await request.send().timeout(const Duration(seconds: 30));
