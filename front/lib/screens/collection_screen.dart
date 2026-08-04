@@ -224,6 +224,12 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
       );
       return;
     }
+    if (_purchasedAt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('구매 날짜를 선택해주세요')),
+      );
+      return;
+    }
 
     setState(() => _submitting = true);
     try {
@@ -233,8 +239,8 @@ class _AddGoodsSheetState extends State<_AddGoodsSheet> {
       await GoodsService.registerGoods(
         image: _selectedImage!,
         name: name,
+        purchasedAt: _isoDate(_purchasedAt!),
         price: price,
-        purchasedAt: _purchasedAt != null ? _isoDate(_purchasedAt!) : null,
         memo: _memoController.text.trim(),
       );
 

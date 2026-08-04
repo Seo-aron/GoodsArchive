@@ -42,7 +42,7 @@ public class GoodsController {
             @RequestPart("image") MultipartFile image,
             @RequestParam("name") String name,
             @RequestParam(value = "price", required = false) BigDecimal price,
-            @RequestParam(value = "purchasedAt", required = false)
+            @RequestParam("purchasedAt")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate purchasedAt,
             @RequestParam(value = "memo", required = false) String memo) {
         var request = new GoodsRegisterRequest(name, price, purchasedAt, memo);

@@ -37,6 +37,7 @@ public class Goods extends BaseEntity { // BaseEntity를 상속받아 생성일(
     @Column(nullable = false)
     private String imageUrl; // 상품 이미지 URL
 
+    @Column(nullable = false)
     private LocalDate purchasedAt; // 구매일
 
     @Column(precision = 12, scale = 2)
