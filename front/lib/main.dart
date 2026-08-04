@@ -25,6 +25,7 @@ class ShowcaseApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '피규어 쇼케이스',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('ko', 'KR'), Locale('en')],
