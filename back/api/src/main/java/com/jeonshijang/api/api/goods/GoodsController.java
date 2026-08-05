@@ -4,6 +4,7 @@ import com.jeonshijang.api.api.goods.dto.GoodsRegisterRequest;
 import com.jeonshijang.api.api.goods.dto.GoodsResponse;
 import com.jeonshijang.api.api.goods.dto.GoodsSummaryResponse;
 import com.jeonshijang.api.api.goods.dto.GoodsUpdateRequest;
+import com.jeonshijang.api.api.goods.dto.MonthlyStatsResponse;
 import com.jeonshijang.api.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,6 +35,12 @@ public class GoodsController {
     public ResponseEntity<GoodsSummaryResponse> getSummary(
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(goodsService.getMySummary(principal.getUserId()));
+    }
+
+    @GetMapping("/monthly-stats")
+    public ResponseEntity<List<MonthlyStatsResponse>> getMonthlyStats(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(goodsService.getMonthlyStats(principal.getUserId()));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

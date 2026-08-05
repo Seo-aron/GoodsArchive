@@ -1,6 +1,8 @@
 package com.jeonshijang.api.domain.goods;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -15,4 +17,11 @@ public interface GoodsRepository extends JpaRepository<Goods, Long> {
      * 핵심: Spring Data JPA의 메서드 이름 규칙을 통해 'SELECT * FROM goods WHERE user_id = ?' 쿼리가 자동 생성됩니다.
      */
     List<Goods> findByUserId(Long userId);
+
+    @Query("SELECT YEAR(g.purchasedAt), MONTH(g.purchasedAt), " +
+           "COALESCE(SUM(g.price), 0), COUNT(g) " +
+           "FROM Goods g WHERE g.user.id = :userId " +
+           "GROUP BY YEAR(g.purchasedAt), MONTH(g.purchasedAt) " +
+           "ORDER BY YEAR(g.purchasedAt), MONTH(g.purchasedAt)")
+    List<Object[]> findMonthlyStatsByUserId(@Param("userId") Long userId);
 }

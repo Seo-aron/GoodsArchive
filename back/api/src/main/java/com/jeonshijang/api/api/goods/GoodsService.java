@@ -4,6 +4,7 @@ import com.jeonshijang.api.api.goods.dto.GoodsRegisterRequest;
 import com.jeonshijang.api.api.goods.dto.GoodsResponse;
 import com.jeonshijang.api.api.goods.dto.GoodsSummaryResponse;
 import com.jeonshijang.api.api.goods.dto.GoodsUpdateRequest;
+import com.jeonshijang.api.api.goods.dto.MonthlyStatsResponse;
 import com.jeonshijang.api.domain.goods.Goods;
 import com.jeonshijang.api.domain.goods.GoodsRepository;
 import com.jeonshijang.api.domain.user.User;
@@ -39,6 +40,19 @@ public class GoodsService {
     public List<GoodsResponse> getMyGoods(Long userId) {
         return goodsRepository.findByUserId(userId).stream()
                 .map(GoodsResponse::from)
+                .toList();
+    }
+
+    public List<MonthlyStatsResponse> getMonthlyStats(Long userId) {
+        return goodsRepository.findMonthlyStatsByUserId(userId).stream()
+                .map(row -> {
+                    int year = ((Number) row[0]).intValue();
+                    int month = ((Number) row[1]).intValue();
+                    BigDecimal totalAmount = row[2] instanceof BigDecimal bd ? bd
+                            : BigDecimal.valueOf(((Number) row[2]).doubleValue());
+                    long goodsCount = ((Number) row[3]).longValue();
+                    return new MonthlyStatsResponse(year, month, totalAmount, goodsCount);
+                })
                 .toList();
     }
 
