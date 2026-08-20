@@ -33,30 +33,30 @@ public class ShowcaseItem {
     private Goods goods;
 
     @Column(nullable = false)
-    private Double positionX; // 전시장 내 X 좌표
+    private Integer pageNumber; // 페이지 번호 (1~maxPages)
 
     @Column(nullable = false)
-    private Double positionY; // 전시장 내 Y 좌표
+    private Integer shelfNumber; // 층 번호 (1~2)
+
+    @Column(nullable = false)
+    private Double xPosition; // 선반 내 X 위치 (0.0~1.0)
+
+    @Column(nullable = false)
+    private Double yPosition; // 선반 내 Y 위치 (0.0~1.0)
 
     @Column(nullable = false)
     private Double scale; // 배치 크기 비율 (확대/축소)
 
     @Builder
     public ShowcaseItem(Showcase showcase, Goods goods,
-                        Double positionX, Double positionY, Double scale) {
+                        Integer pageNumber, Integer shelfNumber,
+                        Double xPosition, Double yPosition, Double scale) {
         this.showcase = showcase;
         this.goods = goods;
-        this.positionX = positionX;
-        this.positionY = positionY;
-        this.scale = scale;
-    }
-
-    /**
-     * 역할: 전시장 내 배치된 상품의 위치와 크기를 변경합니다.
-     */
-    public void updatePosition(Double positionX, Double positionY, Double scale) {
-        this.positionX = positionX;
-        this.positionY = positionY;
+        this.pageNumber = pageNumber;
+        this.shelfNumber = shelfNumber;
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
         this.scale = scale;
     }
 }

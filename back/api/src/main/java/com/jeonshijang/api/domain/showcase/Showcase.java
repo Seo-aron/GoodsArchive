@@ -31,6 +31,9 @@ public class Showcase extends BaseEntity { // BaseEntity를 상속받아 생성�
     @Column(nullable = false)
     private String name; // 전시장 이름
 
+    @Column(nullable = false)
+    private Integer maxPages = 3; // 사용 가능한 최대 페이지 수 (기본 3, BM 확장 시 증가)
+
     @OneToMany( // 핵심: 하나의 전시장은 여러 개의 전시장 아이템(ShowcaseItem)을 가질 수 있음을 나타내는 일대다 관계입니다.
         mappedBy = "showcase", // ShowcaseItem 엔티티의 'showcase' 필드에 의해 매핑됨을 명시합니다.
         cascade = CascadeType.ALL, // 핵심: Showcase가 저장/삭제될 때, 관련된 모든 ShowcaseItem도 함께 저장/삭제됩니다. (영속성 전이)
@@ -43,6 +46,7 @@ public class Showcase extends BaseEntity { // BaseEntity를 상속받아 생성�
     public Showcase(User user, String name) {
         this.user = user;
         this.name = name;
+        this.maxPages = 3;
     }
 
     /**

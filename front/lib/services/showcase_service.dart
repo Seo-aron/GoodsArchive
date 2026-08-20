@@ -4,21 +4,27 @@ import 'api_client.dart';
 
 class PlaceItemDto {
   final int goodsId;
-  final double positionX;
-  final double positionY;
+  final int pageNumber;
+  final int shelfNumber;
+  final double xPosition;
+  final double yPosition;
   final double scale;
 
   const PlaceItemDto({
     required this.goodsId,
-    required this.positionX,
-    required this.positionY,
+    required this.pageNumber,
+    required this.shelfNumber,
+    required this.xPosition,
+    required this.yPosition,
     required this.scale,
   });
 
   Map<String, dynamic> toJson() => {
         'goodsId': goodsId,
-        'positionX': positionX,
-        'positionY': positionY,
+        'pageNumber': pageNumber,
+        'shelfNumber': shelfNumber,
+        'xPosition': xPosition,
+        'yPosition': yPosition,
         'scale': scale,
       };
 }

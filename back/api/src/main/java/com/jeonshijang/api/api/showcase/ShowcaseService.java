@@ -62,8 +62,10 @@ public class ShowcaseService {
                     return ShowcaseItem.builder()
                             .showcase(showcase)
                             .goods(goods)
-                            .positionX(req.positionX())
-                            .positionY(req.positionY())
+                            .pageNumber(req.pageNumber())
+                            .shelfNumber(req.shelfNumber())
+                            .xPosition(req.xPosition())
+                            .yPosition(req.yPosition())
                             .scale(req.scale())
                             .build();
                 })

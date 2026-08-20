@@ -3,8 +3,10 @@ class ShowcasePlacedItem {
   final int goodsId;
   final String goodsName;
   final String goodsImageUrl;
-  final double positionX;
-  final double positionY;
+  final int pageNumber;
+  final int shelfNumber;
+  final double xPosition;
+  final double yPosition;
   final double scale;
 
   const ShowcasePlacedItem({
@@ -12,8 +14,10 @@ class ShowcasePlacedItem {
     required this.goodsId,
     required this.goodsName,
     required this.goodsImageUrl,
-    required this.positionX,
-    required this.positionY,
+    required this.pageNumber,
+    required this.shelfNumber,
+    required this.xPosition,
+    required this.yPosition,
     required this.scale,
   });
 
@@ -23,8 +27,10 @@ class ShowcasePlacedItem {
       goodsId: (json['goodsId'] as num).toInt(),
       goodsName: json['goodsName'] as String,
       goodsImageUrl: json['goodsImageUrl'] as String,
-      positionX: (json['positionX'] as num).toDouble(),
-      positionY: (json['positionY'] as num).toDouble(),
+      pageNumber: (json['pageNumber'] as num).toInt(),
+      shelfNumber: (json['shelfNumber'] as num).toInt(),
+      xPosition: (json['xPosition'] as num).toDouble(),
+      yPosition: (json['yPosition'] as num).toDouble(),
       scale: (json['scale'] as num).toDouble(),
     );
   }
@@ -33,11 +39,13 @@ class ShowcasePlacedItem {
 class ShowcaseData {
   final int id;
   final String name;
+  final int maxPages;
   final List<ShowcasePlacedItem> items;
 
   const ShowcaseData({
     required this.id,
     required this.name,
+    required this.maxPages,
     required this.items,
   });
 
@@ -45,6 +53,7 @@ class ShowcaseData {
     return ShowcaseData(
       id: json['id'] as int,
       name: json['name'] as String,
+      maxPages: (json['maxPages'] as num?)?.toInt() ?? 3,
       items: (json['items'] as List)
           .map((e) => ShowcasePlacedItem.fromJson(e))
           .toList(),
