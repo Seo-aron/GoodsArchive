@@ -67,9 +67,11 @@
 
 ### 2. Showroom — 가상 전시장
 
-등록된 굿즈를 나만의 2D 가상 공간에 자유롭게 배치하고 저장합니다.
+등록된 굿즈를 2층 선반 구조의 유리 장식장에 배치하고 저장합니다.
 
-- 굿즈별 배치 좌표(`positionX`, `positionY`)와 크기(`scale`)를 0.0~1.0 상대값으로 저장, 화면 크기에 독립적으로 동작
+- **3페이지 구조**: 유저당 기본 3페이지 전시장 제공 (`maxPages` 필드로 BM 확장 가능)
+- **2층 선반**: 각 페이지는 1층/2층으로 구분, 층 내 자유로운 X/Y 좌표 + 핀치 줌(`scale`) 지원
+- 배치 정보(`pageNumber`, `shelfNumber`, `xPosition`, `yPosition`, `scale`)를 상대값으로 저장, 화면 크기에 독립적으로 동작
 - 전시장 아이템 전체 교체 방식(`CascadeType.ALL` + `orphanRemoval`)으로 배치 저장 처리
 - `@EntityGraph`를 통한 N+1 쿼리 방지
 - 전시장 최초 접근 시 자동 생성 (유저당 1개 보장)
@@ -79,10 +81,9 @@
 사용자의 컬렉션 데이터를 집계하여 소비 패턴을 파악할 수 있는 통계 API를 제공합니다.
 
 - 총 굿즈 수, 총 자산 가치 집계
-- (예정) 월별·카테고리별 소비 금액 통계
-- (예정) 선호 장르·캐릭터 분석
-
-통계 쿼리는 QueryDSL 기반으로 구성되어 조건 변경에 유연하게 대응하며, 대용량 데이터 환경에서는 필요 컬럼에 대한 인덱스 추가 및 집계 테이블 분리를 통해 응답 성능을 확보할 수 있도록 설계 방향을 정의하였습니다.
+- 월별 지출 금액 및 구입 개수 집계 (JPQL 그룹핑 쿼리, `purchasedAt` 기준)
+- 프론트엔드: `fl_chart` 기반 막대그래프로 월별 추이 시각화, 지출액/구입 개수 탭 전환
+- (예정) 카테고리별 소비 금액 통계, 선호 장르·캐릭터 분석
 
 ---
 
@@ -95,6 +96,8 @@
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/auth/kakao` | 카카오 액세스 토큰으로 JWT 발급 |
+| `POST` | `/api/auth/register` | 자체 회원가입 (loginId / password / nickname) |
+| `POST` | `/api/auth/login` | 자체 로그인 → JWT 발급 |
 | `POST` | `/api/auth/refresh` | Refresh Token으로 토큰 재발급 |
 
 ### Goods
@@ -105,7 +108,8 @@
 | `POST` | `/api/goods` | 굿즈 등록 (Multipart) |
 | `PUT` | `/api/goods/{id}` | 굿즈 정보 수정 |
 | `DELETE` | `/api/goods/{id}` | 굿즈 삭제 (소프트 딜리트) |
-| `GET` | `/api/goods/summary` | 수집 통계 조회 |
+| `GET` | `/api/goods/summary` | 수집 통계 조회 (총 굿즈 수, 총 자산) |
+| `GET` | `/api/goods/monthly-stats` | 월별 지출/구입 개수 통계 조회 |
 
 ### Showcase
 
@@ -170,5 +174,7 @@ cd back/api
 ---
 
 ## Version
+
+`v0.2.0` — 통계 막대그래프, 전시장 2층 선반/3페이지 구조 개편, 유리 장식장 디자인
 
 `v0.1.0` — 핵심 기능 구현 완료, 내부 테스트 단계
