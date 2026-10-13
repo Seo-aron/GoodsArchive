@@ -21,14 +21,15 @@ jeonshijang_app/
 │       │   ├── goods_item.dart     ← GoodsItem 모델 (imageUrl 상대경로 자동 절대변환)
 │       │   ├── goods_summary.dart  ← GoodsSummary 모델
 │       │   ├── showcase_data.dart  ← ShowcaseData, ShowcasePlacedItem 모델
+│       │   ├── monthly_stats.dart  ← MonthlyStats 모델 (월별 지출액/구입 개수)
 │       │   └── user_info.dart      ← UserInfo 모델
 │       ├── screens/
 │       │   ├── login_screen.dart
 │       │   ├── register_screen.dart     ← 자체 회원가입 화면 (ID/PW)
 │       │   ├── collection_screen.dart   ← 굿즈 목록, 등록(+버튼), 카드탭→상세
 │       │   ├── goods_detail_screen.dart ← 굿즈 상세 + 수정/삭제
-│       │   ├── showcase_screen.dart     ← 2D 드래그 배치 + 핀치 줌 + 저장
-│       │   ├── record_screen.dart       ← 수집 통계 대시보드
+│       │   ├── showcase_screen.dart     ← 유리장 UI, 페이지(최대 3)×선반(2층) 드래그 배치 + 핀치 줌 + 저장
+│       │   ├── record_screen.dart       ← 수집 통계 대시보드 + 월별 막대그래프 (fl_chart)
 │       │   └── my_info_screen.dart      ← 프로필 + 로그아웃
 │       └── services/
 │           ├── api_client.dart     ← 공통 HTTP 클라이언트 (JWT 헤더 자동 주입)
@@ -70,7 +71,7 @@ jeonshijang_app/
 | **스토리지** | 로컬 `./uploads/` 디렉토리 (개발) → 추후 AWS S3 전환 예정 |
 | **인프라** | Oracle Cloud Always Free (백엔드 배포), Nginx + Let's Encrypt SSL, 도메인: 가비아 / 호스팅케이알 |
 | **HTTP 클라이언트** | Spring 6 RestClient (카카오 API 호출용) |
-| **프론트엔드** | Flutter (Dart), `kakao_flutter_sdk_user: ^1.9.7`, `http: ^1.2.2`, `image_picker: ^1.1.2`, `flutter_secure_storage: ^9.2.2`, `google_fonts: ^6.2.1` |
+| **프론트엔드** | Flutter (Dart), `kakao_flutter_sdk_user: ^1.9.7`, `http: ^1.2.2`, `image_picker: ^1.1.2`, `flutter_secure_storage: ^9.2.2`, `google_fonts: ^6.2.1`, `fl_chart: ^0.68.0` |
 
 ### 백엔드 실행 방법
 
@@ -151,6 +152,7 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 | `PUT` | `/api/goods/{id}` | 굿즈 수정 (Multipart: image(선택) + name/price/purchasedAt/memo) |
 | `DELETE` | `/api/goods/{id}` | 굿즈 소프트 딜리트 |
 | `GET` | `/api/goods/summary` | 수집 통계 (총 개수, 총 자산가치) |
+| `GET` | `/api/goods/monthly-stats` | 월별 집계 (year, month, totalAmount, goodsCount) — Step 10-2 |
 
 **이미지 저장 방식** (개발):
 * 이미지를 서버 로컬 `./uploads/` 디렉토리에 UUID 파일명으로 저장
@@ -176,6 +178,7 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 
 **배치 저장 포인트**:
 * 좌표는 0.0~1.0 상대값으로 저장 (화면 크기 독립적)
+* ver 0.2.0(Step 10-3)부터 좌표 체계 변경: `pageNumber` + `shelfNumber` + 선반 내 `xPosition/yPosition` + `scale`
 * `saveAndFlush` + 재조회로 신규 아이템 ID null 문제 해결
 * `@EntityGraph`로 N+1 방지
 
@@ -185,7 +188,7 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 | --- | --- | --- |
 | 컬렉션 | `collection_screen.dart`, `goods_detail_screen.dart` | GET/POST/PUT/DELETE `/api/goods` |
 | 전시장 | `showcase_screen.dart` | GET/PUT `/api/showcases` |
-| 기록 | `record_screen.dart` | GET `/api/goods/summary` |
+| 기록 | `record_screen.dart` | GET `/api/goods/summary`, GET `/api/goods/monthly-stats` |
 | 내정보 | `my_info_screen.dart` | GET `/api/users/me` |
 
 ### ✅ Step 7 — JWT 토큰 영속화
@@ -207,6 +210,7 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 * 아이템 시각 크기: `72 * scale` (0.3× ~ 3.0× 범위 제한)
 * scale 값 DB 저장/복원: `PlaceItemDto` 연동, 앱 재시작 시 복원
 * 에뮬레이터 핀치: `Ctrl+드래그` (화면 중앙 기준 대칭 터치 — 아이템을 중앙 근처에 놓고 테스트)
+* ※ `_scales` 맵 구조는 Step 10-3 개편으로 `_ItemState`(선반/위치/scale 통합)로 대체됨
 
 ### ✅ Step 9 — 굿즈 이미지 수정
 
@@ -225,14 +229,13 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 | 기능 | 현재 상태 | 비고 |
 | --- | --- | --- |
 | 공지사항 | 탭만 있고 내용 없음 | 추후 기획 필요 |
-| 통계 막대그래프 | 수치 요약만 표시 | Step 10-2에서 구현 예정 |
-| 전시장 디자인 | 기본 배치만 구현 | Step 10-3에서 유리장 느낌으로 개선 예정 |
+| 전시장 페이지 확장(BM) | `maxPages` 기본 3 고정 | 유료화 등으로 페이지 수 증가 시 사용 예정 — 기획 필요 |
 
 ---
 
 ## 5. 남은 작업 (합의된 우선순위 순)
 
-### 🔲 Step 10 — 디자인 작업
+### ✅ Step 10 — 디자인 작업
 
 전체 UI/UX 개선. 하나씩 순차적으로 진행.
 
@@ -250,23 +253,26 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
 * 수정 다이얼로그(`goods_detail_screen.dart`)에도 날짜 변경 기능 추가
 * 백엔드 `PUT /api/goods/{id}`에 `purchasedAt` 파라미터 추가 (`GoodsUpdateRequest` 확장)
 * X 버튼으로 선택 날짜 초기화 가능
+* 이후 **구매날짜 필수화** (`2d66b26`): `Goods.purchasedAt` `nullable = false`, 등록 API `purchasedAt` 필수, 미선택 시 스낵바 안내
 
-#### Step 10-2 — 통계 페이지 막대그래프 🔲
+#### Step 10-2 — 통계 페이지 막대그래프 ✅ 완료 (`2d19865`)
 
-* 월별 지출 금액 + 굿즈 구입 개수를 막대그래프로 시각화 (`record_screen.dart`)
-* 표시 형식: `20nn년 n월` 기준으로 월별 통계
-* 구성:
-  * 월별 막대그래프 (지출액 / 구입 개수 탭 전환 또는 이중 축)
-  * 총 합계 요약 카드 (누적 지출, 총 굿즈 수)
-* 가시성 최우선 — 한눈에 파악 가능한 레이아웃
-* 백엔드: 월별 집계 API 추가 필요 (`GET /api/goods/monthly-stats`)
-* 패키지 후보: `fl_chart` (Flutter 전용, 커스텀 쉬움)
+* 백엔드: `GET /api/goods/monthly-stats` 추가 — `GoodsRepository.findMonthlyStatsByUserId` (JPQL `YEAR/MONTH(purchasedAt)` 그룹핑), `MonthlyStatsResponse(year, month, totalAmount, goodsCount)`
+* 프론트: `models/monthly_stats.dart`, `SummaryService.getMonthlyStats()` 추가
+* `record_screen.dart`: 총 합계 요약 카드 + `SegmentedButton`으로 **지출액 / 구입 개수** 전환되는 월별 막대그래프 (`fl_chart`)
+* 툴팁 표시 형식: `20nn년 n월`
 
-#### Step 10-3 — 전시장 UI 개선 🔲 (기획 중)
+#### Step 10-3 — 전시장 UI 전면 개편 ✅ 완료 (`d132b36`, ver 0.2.0)
 
-* 유리 전시장 느낌으로 배경/프레임 디자인 변경
-* 가로(landscape) 모드 전환 여부 고민 중
-* 결정 후 구체적인 작업 범위 확정 예정
+* **유리장 디자인**: 실버 테두리 + 밝은 유리 내부 + 그림자, 세로(portrait) 유지
+* **페이지 × 선반 구조**: 상단 페이지 탭(최대 `maxPages`, 기본 3) / 각 페이지에 2층·1층 선반
+* 하단 컬렉션 패널에서 굿즈 탭 → 바텀시트로 1층/2층 선택해 추가 (한 굿즈는 전체 페이지 중 한 곳에만 배치)
+* 배치된 아이템: 드래그 이동 + 핀치 크기 조절, 롱프레스 메뉴로 다른 층 이동 / 페이지에서 제거
+* 백엔드 변경:
+  * `ShowcaseItem`: `positionX/positionY` → `pageNumber`, `shelfNumber`, `xPosition`, `yPosition`, `scale`
+  * `Showcase`: `maxPages` 컬럼 추가 (기본 3, BM 확장 대비)
+  * `PlaceItemRequest`: `pageNumber @Min(1)`, `shelfNumber @Min(1) @Max(2)` 검증
+* ⚠️ H2 기존 DB 주의: `ddl-auto: update`는 구 컬럼(`position_x`, `position_y`)을 삭제하지 않음. NOT NULL로 남아 있으면 저장 실패 가능 → **확인 필요** (필요 시 H2 콘솔에서 `ALTER TABLE showcase_item DROP COLUMN ...`)
 
 ### 🔲 Step 11 — 인프라 / 배포 준비 (최소 비용 · 안드로이드 우선 전략)
 
