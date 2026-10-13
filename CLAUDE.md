@@ -272,7 +272,7 @@ Flutter (kakao_flutter_sdk_user로 카카오 토큰 발급)
   * `ShowcaseItem`: `positionX/positionY` → `pageNumber`, `shelfNumber`, `xPosition`, `yPosition`, `scale`
   * `Showcase`: `maxPages` 컬럼 추가 (기본 3, BM 확장 대비)
   * `PlaceItemRequest`: `pageNumber @Min(1)`, `shelfNumber @Min(1) @Max(2)` 검증
-* ⚠️ H2 기존 DB 주의: `ddl-auto: update`는 구 컬럼(`position_x`, `position_y`)을 삭제하지 않음. NOT NULL로 남아 있으면 저장 실패 가능 → **확인 필요** (필요 시 H2 콘솔에서 `ALTER TABLE showcase_item DROP COLUMN ...`)
+* H2 스키마 확인 완료 (2026-10-13): `showcase_item`에 구 컬럼(`position_x`, `position_y`) 없음 — 개편 시 테이블 재생성됨(기존 배치 데이터 미보존). 운영(MySQL) 전환 후 스키마 변경은 마이그레이션 스크립트로 관리 필요
 
 ### 🔲 Step 11 — 인프라 / 배포 준비 (최소 비용 · 안드로이드 우선 전략)
 
